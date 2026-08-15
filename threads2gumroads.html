@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="Threads2Gumroads — anime prompt product builder by Vuja Tsoaela">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'nonce-1fkPPRlBe9N9WaRBsTzDjUvw'; style-src 'nonce-1fkPPRlBe9N9WaRBsTzDjUvw'; font-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'">
+<title>Threads2Gumroads — Vuja Tsoaela</title>
+<style nonce="1fkPPRlBe9N9WaRBsTzDjUvw">
+/* ============================================================
+   FONT
+   ============================================================ */
+@font-face{
+  font-family:"Radjah";
+  src:url("./fonts/Radjah.woff2") format("woff2");
+  font-display:swap;
+  font-weight:100 900;
+  font-style:normal;
+}
+
+/* ============================================================
+   THEME TOKENS — dark is default, .light overrides on <html>
+   ============================================================ */
+:root{
+  --bg:#06080a;
+  --surface:#0d1114;
+  --raised:#12171b;
+  --soft:#171d21;
+  --text:#f0ede5;
+  --muted:#8f979b;
+  --line:#26323a;
+  --line-bright:#3d4d56;
+  --accent:#5ce1e6;
+  --accent-2:#c9aa6b;
+  --ink:#04191a;
+  --ok:#7be0a0;
+  --shadow:rgba(0,0,0,.5);
+  --glow:rgba(92,225,230,.20);
+  --grid-line:rgba(92,225,230,.05);
+  --radius:12px;
+  --font:"Radjah",Georgia,"Times New Roman",serif;
+  --mono:"Cascadia Code","SFMono-Regular",Consolas,monospace;
+}
+:root.light{
+  --bg:#ece9e0;
+  --surface:#f8f6f0;
+  --raised:#fffdf7;
+  --soft:#e9e5dc;
+  --text:#181817;
+  --muted:#5c5b57;
+  --line:#cfc9bc;
+  --line-bright:#a49d8e;
+  --accent:#0f7f85;
+  --accent-2:#7a5f2b;
+  --ink:#fbfaf5;
+  --ok:#2f7d4f;
+  --shadow:rgba(40,34,24,.14);
+  --glow:rgba(15,127,133,.14);
+  --grid-line:rgba(15,127,133,.06);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*{ box-sizing:border-box; }
+html{ min-width:320px; background:var(--bg); scroll-behavior:smooth; }
+body{
+  min-height:100vh;
+  margin:0;
+  color:var(--text);
+  background:
+    linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0/100% 42px,
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0/42px 100%,
+    radial-gradient(circle at 8% 0%, var(--glow), transparent 26rem),
+    radial-gradient(circle at 100% 10%, rgba(120,140,150,.08), transparent 30rem),
+    var(--bg);
+  font-family:var(--font);
+  letter-spacing:.025em;
+  transition:background .25s, color .25s;
+}
+button,input,select,textarea{ font:inherit; color:inherit; }
+button{ -webkit-tap-highlight-color:transparent; }
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+.shell{ width:min(1240px, calc(100% - 32px)); margin:auto; padding:34px 0 64px; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.top{ display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:28px; }
+.eyebrow{ color:var(--accent); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.16em; }
+h1{
+  margin:8px 0;
+  font-size:clamp(38px,7vw,72px);
+  line-height:.92;
+  letter-spacing:-.03em;
+  text-shadow:0 0 30px var(--glow);
+}
+.intro{ max-width:700px; margin:0; color:var(--muted); font-size:15px; line-height:1.55; }
+
+.theme-toggle{
+  display:flex; align-items:center; gap:8px;
+  padding:10px 14px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:var(--raised);
+  cursor:pointer;
+  white-space:nowrap;
+  transition:.18s;
+}
+.theme-toggle:hover{ border-color:var(--accent); transform:translateY(-1px); box-shadow:0 0 16px var(--glow); }
+
+/* ============================================================
+   LAYOUT / HUD PANELS
+   ============================================================ */
+.grid{ display:grid; grid-template-columns:minmax(320px,380px) minmax(0,1fr); gap:16px; }
+
+.panel{
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:linear-gradient(150deg, var(--raised), var(--surface));
+  box-shadow:0 20px 60px var(--shadow);
+}
+/* corner brackets = HUD styling cue */
+.panel::before,.panel::after{
+  content:"";
+  position:absolute;
+  width:16px; height:16px;
+  border:2px solid var(--accent);
+  opacity:.55;
+  pointer-events:none;
+}
+.panel::before{ top:-1px; left:-1px; border-right:0; border-bottom:0; }
+.panel::after{ bottom:-1px; right:-1px; border-left:0; border-top:0; }
+.panel .top-glow{
+  position:absolute; inset:0 0 auto; height:1px;
+  background:linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity:.7;
+}
+.pad{ padding:22px; }
+
+.heading{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px; }
+.heading .label-group{ display:flex; gap:10px; }
+.num{ margin-top:3px; color:var(--accent); font-family:var(--mono); font-size:10px; letter-spacing:.14em; }
+h2{ margin:0; font-size:17px; letter-spacing:.05em; text-transform:uppercase; }
+
+.status-dot{ width:8px; height:8px; margin-top:5px; border-radius:50%; background:var(--ok); box-shadow:0 0 12px var(--ok); }
+.badge{
+  padding:6px 9px;
+  border:1px solid color-mix(in srgb, var(--ok) 50%, var(--line));
+  border-radius:999px;
+  color:var(--ok);
+  font-family:var(--mono);
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+}
+
+/* ============================================================
+   FORM CONTROLS
+   ============================================================ */
+.field{ margin-top:14px; }
+.field label{
+  display:block; margin-bottom:7px; color:var(--muted);
+  font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.12em;
+}
+.fields-row{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+
+input,select,textarea{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:9px;
+  outline:0;
+  padding:11px 12px;
+  color:var(--text);
+  background:var(--soft);
+  caret-color:var(--accent);
+  transition:.18s;
+}
+textarea{ min-height:110px; resize:vertical; line-height:1.5; }
+input:focus,select:focus,textarea:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--glow); }
+
+.btn-primary{
+  width:100%; margin-top:18px; padding:13px 15px;
+  border:1px solid var(--accent);
+  border-radius:9px;
+  color:var(--ink);
+  background:var(--accent);
+  font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:0 0 24px var(--glow);
+  transition:filter .18s, transform .18s;
+}
+.btn-primary:hover{ filter:brightness(1.1); transform:translateY(-1px); }
+.btn-primary:active{ transform:translateY(0); }
+
+.quick-picks{ margin-top:18px; }
+.micro{ color:var(--muted); font-family:var(--mono); font-size:9px; text-transform:uppercase; letter-spacing:.14em; }
+.chip-row{ display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; }
+.chip{
+  padding:7px 10px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  color:var(--muted);
+  background:var(--raised);
+  font-size:10px;
+  cursor:pointer;
+  transition:.18s;
+}
+.chip:hover{ border-color:var(--accent); color:var(--text); transform:translateY(-1px); }
+
+/* ============================================================
+   OUTPUT PANEL
+   ============================================================ */
+.meta-row{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:16px; }
+.meta-cell{ min-width:0; padding:9px 10px; border:1px solid var(--line); border-radius:9px; background:var(--soft); }
+.meta-cell span{ display:block; margin-bottom:4px; color:var(--muted); font-family:var(--mono); font-size:8px; text-transform:uppercase; letter-spacing:.1em; }
+.meta-cell strong{ display:block; overflow:hidden; font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+
+.tabs{ display:flex; border-bottom:1px solid var(--line); }
+.tab{
+  padding:10px 14px; border:0; border-bottom:2px solid transparent;
+  color:var(--muted); background:transparent; cursor:pointer;
+  font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em;
+}
+.tab.active{ color:var(--text); border-bottom-color:var(--accent); }
+
+pre{
+  min-height:390px; max-height:620px;
+  margin:0; overflow:auto; padding:16px;
+  border:1px solid var(--line); border-top:0;
+  border-radius:0 0 10px 10px;
+  color:var(--text);
+  background:color-mix(in srgb, var(--bg) 92%, black);
+  font:12px/1.65 var(--mono);
+  white-space:pre-wrap; overflow-wrap:anywhere;
+}
+
+.action-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.action-row button, .dest-row button{
+  padding:9px 12px; font-size:11px;
+  border:1px solid var(--line); border-radius:9px;
+  color:var(--muted); background:var(--raised);
+  cursor:pointer; transition:.18s;
+}
+.action-row button:hover, .dest-row button:hover{ border-color:var(--accent); color:var(--text); transform:translateY(-1px); }
+.dest-row{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:8px; }
+
+/* ============================================================
+   PACK BUILDER
+   ============================================================ */
+.pack-section{ margin-top:16px; }
+.pack-count{ color:var(--accent); font-family:var(--mono); font-size:12px; white-space:nowrap; }
+.pack-items{ display:grid; gap:8px; margin-top:14px; }
+.pack-item{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:10px 12px;
+  border:1px solid var(--line); border-radius:9px; background:var(--soft);
+}
+.pack-item strong{ display:block; font-size:12px; }
+.pack-item small{ color:var(--muted); font-size:10px; }
+.pack-empty{ padding:18px; border:1px dashed var(--line); border-radius:9px; color:var(--muted); font-size:11px; background:var(--soft); }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer{
+  display:flex; justify-content:center; flex-wrap:wrap; gap:7px; margin-top:24px;
+  color:var(--muted); font-family:var(--mono); font-size:10px; letter-spacing:.06em;
+}
+.signature{
+  position:fixed; right:18px; bottom:13px; pointer-events:none;
+  color:color-mix(in srgb, var(--text) 18%, transparent);
+  font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:900px){ .grid{ grid-template-columns:1fr; } }
+@media (max-width:680px){
+  .shell{ width:min(calc(100% - 20px),1240px); padding-top:22px; }
+  .top{ flex-direction:column; }
+  .theme-toggle{ align-self:flex-start; }
+  .fields-row,.meta-row,.dest-row{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .meta-row .meta-cell:nth-child(n+3){ display:none; }
+  pre{ min-height:330px; }
+}
+@media (max-width:420px){
+  .fields-row,.dest-row{ grid-template-columns:1fr; }
+  .action-row button{ flex:1 1 calc(50% - 8px); }
+  .signature{ display:none; }
+}
+@media (prefers-reduced-motion:reduce){
+  *{ scroll-behavior:auto !important; transition:none !important; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="top">
+    <div>
+      <div class="eyebrow">Vuja Tsoaela / Prompt Product Studio</div>
+      <h1>Threads2Gumroads</h1>
+      <p class="intro">Turn an anime idea into a polished, reusable prompt product.</p>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false">
+      <span id="themeIcon" aria-hidden="true">☾</span>
+      <span id="themeLabel">Light mode</span>
+    </button>
+  </header>
+
+  <main class="grid">
+
+    <!-- BRIEF -->
+    <section class="panel pad">
+      <span class="top-glow"></span>
+      <div class="heading">
+        <div class="label-group"><span class="num">01</span><h2>Character Brief</h2></div>
+        <span class="status-dot" title="Local-first, nothing leaves your browser"></span>
+      </div>
+
+      <div class="field">
+        <label for="series">Anime / Series</label>
+        <input id="series" list="seriesList" value="86 Eighty-Six" placeholder="e.g. Bleach, Solo Leveling" autocomplete="off">
+        <datalist id="seriesList"></datalist>
+      </div>
+
+      <div class="field">
+        <label for="role">Role / Concept</label>
+        <input id="role" value="Squadron commander" placeholder="e.g. rogue swordsman" autocomplete="off">
+      </div>
+
+      <div class="fields-row">
+        <div class="field">
+          <label for="gender">Gender</label>
+          <select id="gender"><option>Male</option><option>Female</option><option>Any</option></select>
+        </div>
+        <div class="field">
+          <label for="identity">Identity</label>
+          <select id="identity"><option>Black African</option><option>Standalone fictional</option><option>Other</option></select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="aspect">Aspect Ratio</label>
+        <select id="aspect">
+          <option value="9:16">9:16 / Vertical</option>
+          <option value="1:1" selected>1:1 / Square</option>
+          <option value="4:5">4:5 / Portrait</option>
+          <option value="16:9">16:9 / Landscape</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="notes">Visual Direction</label>
+        <textarea id="notes" rows="5">premium anime realism, tactical military outfit, cinematic atmosphere, strong rim light, no purple</textarea>
+      </div>
+
+      <button class="btn-primary" id="generateBtn" type="button">Forge Prompt</button>
+
+      <div class="quick-picks">
+        <span class="micro">Quick worlds</span>
+        <div class="chip-row" id="quickPicks"></div>
+      </div>
+    </section>
+
+    <!-- OUTPUT -->
+    <section class="panel pad">
+      <span class="top-glow"></span>
+      <div class="heading">
+        <div class="label-group"><span class="num">02</span><h2>Generated Asset</h2></div>
+        <span class="badge">Product Ready</span>
+      </div>
+
+      <div class="meta-row">
+        <div class="meta-cell"><span>Series</span><strong id="metaSeries"></strong></div>
+        <div class="meta-cell"><span>Role</span><strong id="metaRole"></strong></div>
+        <div class="meta-cell"><span>Format</span><strong id="metaAspect"></strong></div>
+        <div class="meta-cell"><span>Identity</span><strong id="metaIdentity"></strong></div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" id="tabText" type="button">Text Prompt</button>
+        <button class="tab" id="tabJson" type="button">JSON Prompt</button>
+      </div>
+      <pre id="output" aria-live="polite">Forge a prompt to begin</pre>
+
+      <div class="action-row">
+        <button id="copyBtn" type="button">Copy Prompt</button>
+        <button id="downloadBtn" type="button">Download JSON</button>
+        <button id="addToPackBtn" type="button">Add to Pack</button>
+        <button id="resetBtn" type="button">Reset</button>
+      </div>
+
+      <div class="dest-row">
+        <button data-dest="chatgpt" type="button">ChatGPT ↗</button>
+        <button data-dest="midjourney" type="button">Midjourney ↗</button>
+        <button data-dest="leonardo" type="button">Leonardo ↗</button>
+        <button data-dest="gemini" type="button">Gemini ↗</button>
+      </div>
+
+      <div class="field">
+        <label for="packLine">Gumroad / Threads Pack Line</label>
+        <input id="packLine" readonly>
+      </div>
+    </section>
+  </main>
+
+  <!-- PACK BUILDER -->
+  <section class="panel pad pack-section">
+    <span class="top-glow"></span>
+    <div class="heading">
+      <div class="label-group">
+        <span class="num">03</span>
+        <div>
+          <h2>Pack Builder</h2>
+          <p class="intro">Build locally, then export the finished prompt product.</p>
+        </div>
+      </div>
+      <strong class="pack-count" id="packCount">0 prompts</strong>
+    </div>
+
+    <div class="fields-row">
+      <div class="field"><label for="packTitle">Product Title</label><input id="packTitle" value="Anime Character Prompt Pack"></div>
+      <div class="field"><label for="packCreator">Creator</label><input id="packCreator" value="Vuja Tsoaela"></div>
+    </div>
+
+    <div class="pack-items" id="packItems"></div>
+
+    <div class="action-row">
+      <button id="exportJsonBtn" type="button">Export Pack JSON</button>
+      <button id="exportMdBtn" type="button">Export Gumroad Markdown</button>
+      <button id="clearPackBtn" type="button">Clear Pack</button>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>40 built-in anime worlds</span><span>•</span>
+    <span>Custom series supported</span><span>•</span>
+    <span>Local-first</span><span>•</span>
+    <span>AI image generation ready</span>
+  </footer>
+</div>
+
+<div class="signature" aria-hidden="true">Vuja Tsoaela</div>
+
+<script nonce="1fkPPRlBe9N9WaRBsTzDjUvw">
+"use strict";
+
+/* ============================================================
+   CONFIG — static data, no user input touches these
+   ============================================================ */
+const SERIES = [
+  "One Piece","Solo Leveling","Bleach","Naruto","Jujutsu Kaisen","Black Clover",
+  "Attack on Titan","Cyberpunk: Edgerunners","Demon Slayer","Afro Samurai",
+  "Vinland Saga","Code Geass","Death Note","Akudama Drive","Tokyo Ghoul",
+  "Parasyte: The Maxim","Chainsaw Man","Hell's Paradise","Dororo","Mob Psycho 100",
+  "The Eminence in Shadow","Overlord","Castlevania","Arcane","Baki","Kengan Ashura",
+  "Drifters","Fate/Zero","86 Eighty-Six","Psycho-Pass","Samurai Champloo",
+  "Trigun Stampede","Fullmetal Alchemist: Brotherhood","Hunter x Hunter",
+  "Blue Eye Samurai","Record of Ragnarok","JoJo's Bizarre Adventure","Fire Force",
+  "Devilman Crybaby","Kaiju No. 8"
+];
+
+const FIELDS_BY_SERIES = {
+  "One Piece":"Devil Fruit type, Haki mastery, crew role, bounty",
+  "Solo Leveling":"hunter rank, awakened ability, gate specialization, shadow ability",
+  "Bleach":"Zanpakuto name, Shikai, Bankai, squad affiliation",
+  "Naruto":"clan identity, kekkei genkai, hidden village, signature jutsu",
+  "Jujutsu Kaisen":"cursed technique, domain expansion, cursed energy trait, sorcerer grade",
+  "Black Clover":"grimoire type, magic squad, magic attribute, signature spell",
+  "Attack on Titan":"Titan form or ODM specialty, regiment, battlefield role",
+  "Cyberpunk: Edgerunners":"cyberware loadout, street alias, crew role, Night City specialty",
+  "Demon Slayer":"breathing style, Nichirin blade color, Hashira rank",
+  "Afro Samurai":"legendary blade, combat style, headband rank, personal code",
+  "Vinland Saga":"warrior title, weapon, clan identity, battle philosophy",
+  "Code Geass":"Geass ability, faction, masked identity, Knightmare role",
+  "Death Note":"notebook concept, alias, Shinigami relationship, psychological signature",
+  "Akudama Drive":"criminal classification, alias, signature weapon, specialty",
+  "Tokyo Ghoul":"kagune type, underground alias, threat rating, CCG relationship",
+  "Parasyte: The Maxim":"parasite form, transformation ability, host philosophy",
+  "Chainsaw Man":"devil contract, transformed weapon form, hunter rank, division",
+  "Hell's Paradise":"condemned title, combat art, Tao potential, survival philosophy",
+  "Dororo":"stolen body parts, supernatural replacements, blade style, recovery goal",
+  "Mob Psycho 100":"psychic class, emotion percentage trigger, awakened form",
+  "The Eminence in Shadow":"shadow codename, organization rank, dark ability",
+  "Overlord":"race/class combination, guild or faction, supreme-tier magic",
+  "Castlevania":"bloodline curse, night magic type, weapon, castle domain",
+  "Arcane":"hextech invention, faction allegiance, signature ability",
+  "Baki":"fighting style, underground title, finishing move",
+  "Kengan Ashura":"fighting technique, corporate sponsor, fight record",
+  "Drifters":"historical origin era, battle ability, Drifter/End alignment",
+  "Fate/Zero":"Servant/Master role, class, Noble Phantasm or magecraft",
+  "86 Eighty-Six":"squadron callsign, Juggernaut unit, rank/title, command code, combat philosophy",
+  "Psycho-Pass":"crime coefficient, Inspector/Enforcer rank, Dominator configuration",
+  "Samurai Champloo":"freestyle sword style, wanderer alias, personal code",
+  "Trigun Stampede":"bounty amount, signature weapon, outlaw philosophy",
+  "Fullmetal Alchemist: Brotherhood":"alchemy specialization, military codename, transmutation signature",
+  "Hunter x Hunter":"Nen type, Hunter license class, signature ability, activation condition",
+  "Blue Eye Samurai":"sword style, personal vendetta, outcast title",
+  "Record of Ragnarok":"divine opponent, Volund weapon, fighting legacy",
+  "JoJo's Bizarre Adventure":"Stand name, Stand ability, signature pose",
+  "Fire Force":"pyrokinetic generation, flame ability, company number",
+  "Devilman Crybaby":"demon name, hybrid transformation, signature power",
+  "Kaiju No. 8":"kaiju designation, Defense Force rank, dual combat form"
+};
+const DEFAULT_FIELDS = "signature ability, rank or title, unique defining trait, distinctive weapon or tool, world-specific role";
+
+const DESTINATIONS = {
+  chatgpt:"https://chatgpt.com/",
+  midjourney:"https://www.midjourney.com/",
+  leonardo:"https://leonardo.ai/",
+  gemini:"https://gemini.google.com/"
+};
+
+const ASPECT_LABELS = { "9:16":"vertical", "1:1":"square", "4:5":"portrait", "16:9":"landscape" };
+const QUICK_PICKS = ["86 Eighty-Six","Bleach","Solo Leveling","Chainsaw Man","One Piece","Kaiju No. 8"];
+const PACK_STORAGE_KEY = "t2g-pack-v4";
+const THEME_STORAGE_KEY = "t2g-theme";
+
+/* ============================================================
+   DOM REFS
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+
+const dom = {
+  series: $("series"), seriesList: $("seriesList"), role: $("role"),
+  gender: $("gender"), identity: $("identity"), aspect: $("aspect"), notes: $("notes"),
+  output: $("output"),
+  metaSeries: $("metaSeries"), metaRole: $("metaRole"), metaAspect: $("metaAspect"), metaIdentity: $("metaIdentity"),
+  packLine: $("packLine"),
+  packItems: $("packItems"), packCount: $("packCount"),
+  packTitle: $("packTitle"), packCreator: $("packCreator"),
+  themeToggle: $("themeToggle"), themeIcon: $("themeIcon"), themeLabel: $("themeLabel"),
+  quickPicks: $("quickPicks"),
+  tabText: $("tabText"), tabJson: $("tabJson")
+};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  activeTab: "text",
+  currentText: "",
+  currentJson: null,
+  pack: loadPack()
+};
+
+/* ============================================================
+   STORAGE HELPERS
+   ============================================================ */
+function loadPack() {
+  try {
+    const raw = localStorage.getItem(PACK_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePack() {
+  try {
+    localStorage.setItem(PACK_STORAGE_KEY, JSON.stringify(state.pack));
+  } catch {
+    /* storage unavailable (private mode, quota) — pack stays in memory only */
+  }
+}
+
+/* ============================================================
+   PROMPT BUILDING
+   ============================================================ */
+function getFieldsFor(seriesName) {
+  return FIELDS_BY_SERIES[seriesName] || DEFAULT_FIELDS;
+}
+
+function is86(seriesName) {
+  return seriesName.toLowerCase().includes("86");
+}
+
+function buildPrompt() {
+  const series = dom.series.value.trim() || "Original Anime";
+  const role = dom.role.value.trim() || "elite original character";
+  const gender = dom.gender.value;
+  const identity = dom.identity.value;
+  const aspect = dom.aspect.value;
+  const notes = dom.notes.value.trim();
+  const traits = getFieldsFor(series);
+  const isBlackAfrican = identity === "Black African";
+  const source86 = is86(series);
+  const protagonist = isBlackAfrican ? "a Black African protagonist" : "a standalone fictional protagonist";
+  const visualDirection = notes || "premium anime realism, cinematic lighting, strong readable contrast, no purple";
+
+  const text = `Based on our conversation so far, create a new ${series} style character visual that suits me, anime style, featuring ${protagonist} as an original ${role}. Complete the character with ${traits}. Use the visual direction: ${visualDirection}. Create a visual of ${aspect}.`;
+
+  const json = {
+    project: {
+      type: "character_poster",
+      title: `${series}: ${source86 ? "Shadow 86" : "Original Character"}`,
+      concept: `Original anime character inspired by the visual language, atmosphere, worldbuilding and design vocabulary of ${series}`,
+      purpose: "Premium anime character visual"
+    },
+    character: {
+      name: source86 ? "Vuja Tsoaela" : `${series} Original`,
+      callsign: source86 ? "Shadow 86" : "",
+      rank: role,
+      unit: source86 ? "Spearhead-inspired original unit" : `Original faction inspired by ${series}`,
+      age_appearance: "early 30s",
+      gender,
+      ethnicity: identity,
+      build: "lean, athletic, battle-hardened",
+      skin: isBlackAfrican ? "deep brown" : "",
+      hair: "short dark hair with a distinctive silhouette",
+      facial_features: "sharp, expressive anime-realistic features",
+      expression: "calm, confident, unreadable and visually memorable",
+      defining_mark: source86 ? "small 86-inspired insignia beneath the eye" : "",
+      accessories: ["tactical communications earpiece", "minimal identification tags"]
+    },
+    outfit: {
+      style: `world-appropriate ${series}-inspired character design`,
+      base_colors: ["matte black", "charcoal", "off-white", "muted gold", "deep red"],
+      armor_or_clothing: notes || "premium tactical anime outfit",
+      jacket_or_outer_layer: "dark structured outer layer",
+      gloves: "black tactical gloves",
+      boots_or_footwear: "reinforced combat boots",
+      insignia: "original faction insignia",
+      condition: "battle-worn but meticulously maintained"
+    },
+    weapon: {
+      primary: source86 ? "high-frequency tactical combat blade" : "signature weapon appropriate to the selected universe",
+      secondary: "compact secondary weapon or tool",
+      style: `functional ${series}-appropriate combat hardware`,
+      details: "scratched metal, worn grips and subtle interfaces"
+    },
+    signature_ability: {
+      name: source86 ? "Ghost Protocol" : `Original ${series} Signature Ability`,
+      type: "advanced combat specialization",
+      description: `A unique ability built around ${traits} while remaining an original character concept.`,
+      visual_effect: "subtle energy distortion, restrained motion trails and atmospheric particles",
+      combat_effect: "exploits timing, terrain and enemy blind spots",
+      quote: "I finish what I start."
+    },
+    unique_defining_trait: {
+      name: source86 ? "Undying Will" : "Unbreakable Resolve",
+      description: source86
+        ? "Refuses to abandon the mission or comrades regardless of overwhelming odds."
+        : "A world-specific trait that defines the character beyond raw power.",
+      characterization: "quiet resilience, loyalty, emotional control and persistence under pressure",
+      quote: "The outcome changes when I refuse to quit."
+    },
+    worldbuilding: {
+      setting: `${series}-inspired world`,
+      background: "cinematic environmental storytelling with smoke, dust, debris and faction-specific visual language",
+      environment: `A dramatic setting that communicates the selected universe: ${series}.`,
+      lore: "An original character whose reputation was built through impossible missions and a defining choice."
+    },
+    composition: {
+      format: `${aspect} character poster`,
+      character_position: "primary focal area",
+      character_scale: "large foreground subject",
+      pose: "confident, controlled combat-ready stance",
+      head_position: "slightly raised chin",
+      camera: "cinematic medium close-up",
+      perspective: "slightly low dynamic angle",
+      background_depth: "strong atmospheric depth",
+      negative_space: "reserved space for character dossier typography"
+    },
+    visual_style: {
+      medium: "premium anime illustration",
+      inspiration: series,
+      rendering: "high-detail anime realism",
+      lighting: "cinematic directional lighting",
+      rim_light: "subtle warm rim light",
+      contrast: "strong readable shadows with controlled highlights",
+      effects: ["floating embers", "smoke", "dust", "subtle sparks"],
+      color_palette: ["black", "charcoal", "off-white", "muted gold", "deep red"],
+      avoid: ["purple", "generic anime protagonist", "chibi proportions", "bright cheerful palette"]
+    },
+    poster_design: {
+      header: series.toUpperCase(),
+      main_name: source86 ? "VUJA TSOAELA" : `${series.toUpperCase()} ORIGINAL`,
+      callsign_text: source86 ? "CALLSIGN: SHADOW 86" : "CALLSIGN: ORIGINAL",
+      rank_text: `ROLE: ${role.toUpperCase()}`,
+      unit_text: source86 ? "UNIT: SPEARHEAD-INSPIRED" : "UNIT: ORIGINAL",
+      ability_panel: `SIGNATURE ABILITY: ${source86 ? "GHOST PROTOCOL" : "ORIGINAL SIGNATURE"}`,
+      trait_panel: `DEFINING TRAIT: ${source86 ? "UNDYING WILL" : "UNBREAKABLE RESOLVE"}`,
+      graphic_elements: ["faction insignia", "identification data", "world-specific UI", "dossier typography"],
+      signature: "Vuja Tsoaela",
+      signature_position: "bottom right"
+    },
+    text_direction: {
+      typography: "Radjah-inspired futuristic display typography with strong cinematic hierarchy",
+      hierarchy: "character name largest, followed by callsign, role, unit, ability and defining trait",
+      legibility: "all typography must remain sharp, readable and correctly spelled",
+      language: "English"
+    },
+    quality: {
+      resolution: "ultra high resolution",
+      detail_level: "high",
+      finish: "premium anime key visual",
+      anatomy: "accurate human anatomy",
+      face: "highly detailed expressive anime-realistic face",
+      environment_detail: "dense cinematic environment"
+    },
+    technical: {
+      aspect_ratio: aspect,
+      orientation: ASPECT_LABELS[aspect],
+      resolution: "ultra high resolution",
+      quality: "premium",
+      image_count: 1
+    },
+    negative_prompt: [
+      "purple", "low resolution", "blurry", "poor anatomy", "extra fingers", "deformed hands",
+      "duplicate limbs", "generic anime protagonist", "oversized muscles", "childlike appearance",
+      "incorrect text", "misspelled name", "illegible typography", "watermark"
+    ]
+  };
+
+  state.currentText = text;
+  state.currentJson = json;
+
+  dom.metaSeries.textContent = series;
+  dom.metaRole.textContent = role;
+  dom.metaAspect.textContent = aspect;
+  dom.metaIdentity.textContent = identity;
+  dom.packLine.value = `${series} — ${role} | ${aspect} | AI Image Generation Ready | By Vuja Tsoaela`;
+
+  renderOutput();
+}
+
+/* ============================================================
+   RENDERING — all output goes through textContent, never innerHTML
+   ============================================================ */
+function renderOutput() {
+  dom.output.textContent = state.activeTab === "text"
+    ? (state.currentText || "Forge a prompt to begin")
+    : (state.currentJson ? JSON.stringify(state.currentJson, null, 2) : "Forge a prompt to begin");
+
+  dom.tabText.classList.toggle("active", state.activeTab === "text");
+  dom.tabJson.classList.toggle("active", state.activeTab === "json");
+}
+
+function renderPack() {
+  dom.packCount.textContent = `${state.pack.length} prompt${state.pack.length === 1 ? "" : "s"}`;
+  dom.packItems.replaceChildren();
+
+  if (!state.pack.length) {
+    const empty = document.createElement("div");
+    empty.className = "pack-empty";
+    empty.textContent = "No prompts added yet. Forge one above, then add it to the pack.";
+    dom.packItems.appendChild(empty);
+    return;
+  }
+
+  for (const entry of state.pack) {
+    const row = document.createElement("article");
+    row.className = "pack-item";
+
+    const info = document.createElement("div");
+    const title = document.createElement("strong");
+    const subtitle = document.createElement("small");
+    title.textContent = entry.series;
+    subtitle.textContent = `${entry.role} · ${entry.aspect}`;
+    info.append(title, subtitle);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "chip";
+    removeBtn.textContent = "Remove";
+    removeBtn.addEventListener("click", () => {
+      state.pack = state.pack.filter((item) => item.id !== entry.id);
+      savePack();
+      renderPack();
+    });
+
+    row.append(info, removeBtn);
+    dom.packItems.appendChild(row);
+  }
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+async function copyActiveOutput() {
+  const value = state.activeTab === "text" ? state.currentText : JSON.stringify(state.currentJson, null, 2);
+  if (!value) return;
+
+  try {
+    await navigator.clipboard.writeText(value);
+  } catch {
+    // Clipboard API unavailable — fall back to a hidden textarea + execCommand.
+    const helper = document.createElement("textarea");
+    helper.value = value;
+    helper.style.position = "fixed";
+    helper.style.opacity = "0";
+    document.body.appendChild(helper);
+    helper.select();
+    try { document.execCommand("copy"); } catch { /* clipboard truly unavailable */ }
+    helper.remove();
+  }
+}
+
+function downloadFile(filename, data, mimeType) {
+  const blob = new Blob([data], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function slugify(value, fallback) {
+  const slug = value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return slug || fallback;
+}
+
+function addCurrentPromptToPack() {
+  if (!state.currentJson || !state.currentText) return;
+  state.pack.push({
+    id: (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
+    series: dom.series.value.trim(),
+    role: dom.role.value.trim(),
+    aspect: dom.aspect.value,
+    textPrompt: state.currentText,
+    jsonPrompt: state.currentJson
+  });
+  savePack();
+  renderPack();
+}
+
+function resetOutput() {
+  state.currentText = "";
+  state.currentJson = null;
+  dom.packLine.value = "";
+  renderOutput();
+}
+
+function exportPackJson() {
+  const title = dom.packTitle.value.trim() || "Anime Character Prompt Pack";
+  const creator = dom.packCreator.value.trim() || "Vuja Tsoaela";
+  const payload = { title, creator, items: state.pack };
+  downloadFile(`${slugify(title, "prompt-pack")}.json`, JSON.stringify(payload, null, 2), "application/json");
+}
+
+function exportPackMarkdown() {
+  const title = dom.packTitle.value.trim() || "Anime Character Prompt Pack";
+  const creator = dom.packCreator.value.trim() || "Vuja Tsoaela";
+  const fence = "```"; // built as a plain string, not a template literal, to avoid backtick-escaping bugs
+
+  const sections = state.pack.flatMap((item, index) => ([
+    `## ${index + 1}. ${item.series} — ${item.role}`,
+    "",
+    item.textPrompt,
+    "",
+    "### JSON Prompt",
+    "",
+    `${fence}json`,
+    JSON.stringify(item.jsonPrompt, null, 2),
+    fence,
+    "",
+    "---",
+    ""
+  ]));
+
+  const lines = [`# ${title}`, "", `By ${creator}`, "", "---", "", ...sections];
+  downloadFile(`${slugify(title, "prompt-pack")}.md`, lines.join("\n"), "text/markdown");
+}
+
+function clearPack() {
+  if (!state.pack.length || confirm("Clear the entire prompt pack?")) {
+    state.pack = [];
+    savePack();
+    renderPack();
+  }
+}
+
+/* ============================================================
+   THEME
+   ============================================================ */
+function applyTheme(isLight) {
+  document.documentElement.classList.toggle("light", isLight);
+  dom.themeIcon.textContent = isLight ? "☀" : "☾";
+  dom.themeLabel.textContent = isLight ? "Dark mode" : "Light mode";
+  dom.themeToggle.setAttribute("aria-pressed", String(isLight));
+}
+
+function toggleTheme() {
+  const isLight = !document.documentElement.classList.contains("light");
+  applyTheme(isLight);
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, isLight ? "light" : "dark");
+  } catch { /* storage unavailable — theme just won't persist */ }
+}
+
+function initTheme() {
+  let preference = null;
+  try { preference = localStorage.getItem(THEME_STORAGE_KEY); } catch { /* ignore */ }
+
+  if (preference === "light") {
+    applyTheme(true);
+  } else if (preference === "dark") {
+    applyTheme(false);
+  } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+    applyTheme(true);
+  }
+}
+
+/* ============================================================
+   STATIC LIST POPULATION
+   ============================================================ */
+function populateSeriesOptions() {
+  const fragment = document.createDocumentFragment();
+  for (const name of SERIES) {
+    const option = document.createElement("option");
+    option.value = name;
+    fragment.appendChild(option);
+  }
+  dom.seriesList.appendChild(fragment);
+}
+
+function populateQuickPicks() {
+  for (const name of QUICK_PICKS) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "chip";
+    btn.textContent = name === "86 Eighty-Six" ? "86" : name;
+    btn.addEventListener("click", () => {
+      dom.series.value = name;
+      buildPrompt();
+    });
+    dom.quickPicks.appendChild(btn);
+  }
+}
+
+/* ============================================================
+   EVENT BINDINGS
+   ============================================================ */
+function bindEvents() {
+  $("generateBtn").addEventListener("click", buildPrompt);
+  $("copyBtn").addEventListener("click", copyActiveOutput);
+  $("downloadBtn").addEventListener("click", () => {
+    if (!state.currentJson) return;
+    downloadFile("threads2gumroads-prompt.json", JSON.stringify(state.currentJson, null, 2), "application/json");
+  });
+  $("addToPackBtn").addEventListener("click", addCurrentPromptToPack);
+  $("resetBtn").addEventListener("click", resetOutput);
+
+  dom.tabText.addEventListener("click", () => { state.activeTab = "text"; renderOutput(); });
+  dom.tabJson.addEventListener("click", () => { state.activeTab = "json"; renderOutput(); });
+
+  document.querySelectorAll("[data-dest]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      copyActiveOutput();
+      const url = DESTINATIONS[btn.dataset.dest];
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+    });
+  });
+
+  $("exportJsonBtn").addEventListener("click", exportPackJson);
+  $("exportMdBtn").addEventListener("click", exportPackMarkdown);
+  $("clearPackBtn").addEventListener("click", clearPack);
+
+  dom.themeToggle.addEventListener("click", toggleTheme);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  initTheme();
+  populateSeriesOptions();
+  populateQuickPicks();
+  bindEvents();
+  buildPrompt();
+  renderPack();
+}
+
+init();
+</script>
+</body>
+</html>
