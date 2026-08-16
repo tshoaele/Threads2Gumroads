@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <meta name="description" content="Threads2Gumroads — anime prompt product builder by Vuja Tsoaela">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'nonce-1fkPPRlBe9N9WaRBsTzDjUvw'; style-src 'nonce-1fkPPRlBe9N9WaRBsTzDjUvw'; font-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'">
 <title>Threads2Gumroads — Vuja Tsoaela</title>
-<style nonce="1fkPPRlBe9N9WaRBsTzDjUvw">
+<style>
 /* ============================================================
    FONT
    ============================================================ */
@@ -106,7 +106,7 @@ h1{
   display:flex; align-items:center; gap:8px;
   padding:10px 14px;
   border:1px solid var(--line);
-  border-radius:9px;
+  border-radius:99px;
   background:var(--raised);
   cursor:pointer;
   white-space:nowrap;
@@ -127,7 +127,6 @@ h1{
   background:linear-gradient(150deg, var(--raised), var(--surface));
   box-shadow:0 20px 60px var(--shadow);
 }
-/* corner brackets = HUD styling cue */
 .panel::before,.panel::after{
   content:"";
   position:absolute;
@@ -452,7 +451,7 @@ pre{
 
 <div class="signature" aria-hidden="true">Vuja Tsoaela</div>
 
-<script nonce="1fkPPRlBe9N9WaRBsTzDjUvw">
+<script>
 "use strict";
 
 /* ============================================================
@@ -571,15 +570,27 @@ function savePack() {
   try {
     localStorage.setItem(PACK_STORAGE_KEY, JSON.stringify(state.pack));
   } catch {
-    /* storage unavailable (private mode, quota) — pack stays in memory only */
+    /* storage unavailable */
   }
+}
+
+function generateId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
 /* ============================================================
    PROMPT BUILDING
    ============================================================ */
 function getFieldsFor(seriesName) {
-  return FIELDS_BY_SERIES[seriesName] || DEFAULT_FIELDS;
+  if (!seriesName) return DEFAULT_FIELDS;
+  const normalized = seriesName.trim().toLowerCase();
+  const matchKey = Object.keys(FIELDS_BY_SERIES).find(
+    (key) => key.toLowerCase() === normalized
+  );
+  return matchKey ? FIELDS_BY_SERIES[matchKey] : DEFAULT_FIELDS;
 }
 
 function is86(seriesName) {
@@ -737,7 +748,7 @@ function buildPrompt() {
 }
 
 /* ============================================================
-   RENDERING — all output goes through textContent, never innerHTML
+   RENDERING
    ============================================================ */
 function renderOutput() {
   dom.output.textContent = state.activeTab === "text"
@@ -796,14 +807,15 @@ async function copyActiveOutput() {
   try {
     await navigator.clipboard.writeText(value);
   } catch {
-    // Clipboard API unavailable — fall back to a hidden textarea + execCommand.
     const helper = document.createElement("textarea");
     helper.value = value;
     helper.style.position = "fixed";
-    helper.style.opacity = "0";
+    helper.style.left = "-9999px";
+    helper.style.top = "-9999px";
     document.body.appendChild(helper);
-    helper.select();
-    try { document.execCommand("copy"); } catch { /* clipboard truly unavailable */ }
+    helper.focus();
+    helper.setSelectionRange(0, helper.value.length);
+    try { document.execCommand("copy"); } catch { /* ignore */ }
     helper.remove();
   }
 }
@@ -829,7 +841,7 @@ function slugify(value, fallback) {
 function addCurrentPromptToPack() {
   if (!state.currentJson || !state.currentText) return;
   state.pack.push({
-    id: (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
+    id: generateId(),
     series: dom.series.value.trim(),
     role: dom.role.value.trim(),
     aspect: dom.aspect.value,
@@ -844,6 +856,10 @@ function resetOutput() {
   state.currentText = "";
   state.currentJson = null;
   dom.packLine.value = "";
+  dom.metaSeries.textContent = "";
+  dom.metaRole.textContent = "";
+  dom.metaAspect.textContent = "";
+  dom.metaIdentity.textContent = "";
   renderOutput();
 }
 
@@ -854,15 +870,19 @@ function exportPackJson() {
   downloadFile(`${slugify(title, "prompt-pack")}.json`, JSON.stringify(payload, null, 2), "application/json");
 }
 
+function sanitizeMarkdown(text) {
+  return String(text).replace(/```/g, "\\`\\`\\`");
+}
+
 function exportPackMarkdown() {
   const title = dom.packTitle.value.trim() || "Anime Character Prompt Pack";
   const creator = dom.packCreator.value.trim() || "Vuja Tsoaela";
-  const fence = "```"; // built as a plain string, not a template literal, to avoid backtick-escaping bugs
+  const fence = "```";
 
   const sections = state.pack.flatMap((item, index) => ([
     `## ${index + 1}. ${item.series} — ${item.role}`,
     "",
-    item.textPrompt,
+    sanitizeMarkdown(item.textPrompt),
     "",
     "### JSON Prompt",
     "",
@@ -901,7 +921,7 @@ function toggleTheme() {
   applyTheme(isLight);
   try {
     localStorage.setItem(THEME_STORAGE_KEY, isLight ? "light" : "dark");
-  } catch { /* storage unavailable — theme just won't persist */ }
+  } catch { /* storage unavailable */ }
 }
 
 function initTheme() {
