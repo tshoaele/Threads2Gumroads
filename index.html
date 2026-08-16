@@ -5,20 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <meta name="description" content="Threads2Gumroads — anime prompt product builder by Vuja Tsoaela">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <title>Threads2Gumroads — Vuja Tsoaela</title>
 <style>
-/* ============================================================
-   FONT
-   ============================================================ */
-@font-face{
-  font-family:"Radjah";
-  src:url("./fonts/Radjah.woff2") format("woff2");
-  font-display:swap;
-  font-weight:100 900;
-  font-style:normal;
-}
-
 /* ============================================================
    THEME TOKENS — dark is default, .light overrides on <html>
    ============================================================ */
@@ -39,7 +31,7 @@
   --glow:rgba(92,225,230,.20);
   --grid-line:rgba(92,225,230,.05);
   --radius:12px;
-  --font:"Radjah",Georgia,"Times New Roman",serif;
+  --font:"Rajdhani",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   --mono:"Cascadia Code","SFMono-Regular",Consolas,monospace;
 }
 :root.light{
@@ -708,7 +700,7 @@ function buildPrompt() {
       signature_position: "bottom right"
     },
     text_direction: {
-      typography: "Radjah-inspired futuristic display typography with strong cinematic hierarchy",
+      typography: "Rajdhani futuristic display typography with strong cinematic hierarchy",
       hierarchy: "character name largest, followed by callsign, role, unit, ability and defining trait",
       legibility: "all typography must remain sharp, readable and correctly spelled",
       language: "English"
